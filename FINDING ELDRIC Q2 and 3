@@ -1,0 +1,22 @@
+const light_threshold = 30;
+const speed = 200;
+
+while (!ev3_touchSensorPressed(ev3_touchSensor2())) {
+    ev3_motorSetSpeed(ev3_motorA(), speed);
+    ev3_motorSetStopAction(ev3_motorA(), "brake");
+    ev3_motorSetSpeed(ev3_motorD(), speed);
+    ev3_motorSetStopAction(ev3_motorD(), "brake");
+
+    if (display(ev3_reflectedLightIntensity(ev3_colorSensor())) > light_threshold) {
+        ev3_motorStart(ev3_motorA());
+        ev3_motorStop(ev3(motorD()));
+        display("R");
+    } else {
+        ev3_motorStart(ev3_motorD());
+        ev3_motorStop(ev3_motorA());
+        ev3_motorSetSpeed(ev3_motorA(), -speed);
+        ev3_motorStart(ev3_motorA());
+        display("L"); 
+    }
+    ev3_pause(1000);
+}

@@ -1,0 +1,101 @@
+Q1
+function my_first_filter(src, dest) {
+    const width = image_width();
+    const height = image_height();
+
+    for (let y = 0; y < height; y = y + 1) {
+        for (let x = 0; x < width; x = x + 1) {
+            dest[y][x][0] = src[y][x][0] + y/height * 255; 
+            dest[y][x][1] = src[y][x][1] + x/width * 255; 
+            dest[y][x][2] = src[y][x][2] + (1 - y/height) * ((width - x)/width * 255); 
+            dest[y][x][3] = 255;                // always 255
+        }
+    }
+}
+
+Q2
+function crosshair(src, dest) {
+    const width = image_width();
+    const height = image_height();
+
+    for (let i = 0; i < height; i = i + 1) {
+        for (let j = 0; j < width; j = j + 1) {
+           if (j === width/2 || i === height/2) {
+               dest[i][j][0] = 255;
+               dest[i][j][1] = src[i][j][1];
+               dest[i][j][2] = src[i][j][2];
+               dest[i][j][3] = src[i][j][3];
+           } else if (math_sqrt((j-width/2)*(j-width/2) + (i-height/2)*(i-height/2)) % 50 > 25) {
+               dest[i][j][0] = src[i][j][0];
+               dest[i][j][1] = src[i][j][1];
+               dest[i][j][2] = 255;
+               dest[i][j][3] = src[i][j][3];
+           } else {
+               dest[i][j][0] = src[i][j][0];
+               dest[i][j][1] = src[i][j][1];
+               dest[i][j][2] = src[i][j][2];
+               dest[i][j][3] = src[i][j][3];
+           }
+        }
+    }
+}
+Q3
+function zoom(factor) {
+    function copy(src, dest) {
+        const width = image_width();
+        const height = image_height();
+    
+        for (let i = 0; i < height; i = i + 1) {
+            for (let j = 0; j < width; j = j + 1) {
+                const centre_width = math_floor(width/2);
+                const centre_height = math_floor(height/2);
+                const src_width = (math_floor(centre_width + (j - centre_width) / factor));
+                const src_height = (math_floor(centre_height + (i - centre_height) / factor));
+                
+                dest[i][j][0] = src[src_height][src_width][0];  
+                dest[i][j][1] = src[src_height][src_width][1];  
+                dest[i][j][2] = src[src_height][src_width][2];  
+                dest[i][j][3] = 255; 
+            }
+        }
+    }
+    return copy;
+}
+Q4
+function beside(filter1, filter2) {
+    const temp1 = make_image(WIDTH, HEIGHT);
+    const temp2 = make_image(WIDTH, HEIGHT);
+
+    return (src, dest) => {
+        const width = image_width();
+        const height = image_height();
+        const half_width = math_floor(width / 2);
+
+        filter1(src, temp1);
+        filter2(src, temp2);
+
+        for (let i = 0; i < height; i = i + 1) {
+            for (let j = 0; j < half_width; j = j + 1) {
+                for (let k = 0; k < 4; k = k + 1) {
+                    dest[i][j][k] = temp1[i][j][k];
+                }
+            }
+        }
+
+        for (let i = 0; i < height; i = i + 1) {
+            for (let j = half_width; j < width; j = j + 1) {
+                for (let k = 0; k < 4; k = k + 1) {
+                    dest[i][j][k] = temp2[i][j - half_width][k];
+                }
+            }
+        }
+    };
+}
+Q5
+function compose(filter1, filter2) {
+    return (src, dest) => {
+        const temp = make_image(WIDTH, HEIGHT);
+        filter1(src, temp);
+        filter2(temp, dest);
+    };
+}
